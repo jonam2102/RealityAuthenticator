@@ -1,0 +1,9 @@
+2025-10-16T09:58:04.611Z | LOGIN | jonam2102
+2025-10-16T10:23:42.291Z | LOGIN | smoketest
+2025-10-16T10:23:59.441Z | {"type":"smoke","message":"test log","_user":"smoketest","_ts":"2025-10-16T10:23:59.441Z"}
+2025-10-16T10:43:36.501Z | LOGIN | ci-smoke
+2025-10-16T10:43:36.502Z | {"type":"ci-smoke","message":"ok","_user":"ci-smoke","_ts":"2025-10-16T10:43:36.502Z"}
+2025-10-17T03:32:59.706Z | LOGIN | admin
+2025-10-17T03:33:25.539Z | LOGIN | admin
+2025-10-18T11:21:15.567Z | LOGIN | ci-smoke
+2025-10-18T11:21:15.569Z | {"type":"ci-smoke","message":"ok","_user":"ci-smoke","_ts":"2025-10-18T11:21:15.569Z"}

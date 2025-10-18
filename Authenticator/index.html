@@ -1,0 +1,849 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Modular Digital Forensic Suite</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@100..900&display=swap');
+        body { font-family: 'Inter', sans-serif; background-color: #f7f9fc; }
+        .card { backdrop-filter: blur(10px); background-color: rgba(255, 255, 255, 0.95); }
+        .spinner { border-top-color: #3b82f6; }
+        .tab-button.active { border-bottom: 4px solid #4f46e5; color: #4f46e5; font-weight: 600; }
+        #tab-document.active { border-bottom: 4px solid #2563eb; color: #2563eb; font-weight: 600; }
+        #tab-social.active { border-bottom: 4px solid #d946ef; color: #d946ef; font-weight: 600; }
+        .doc-primary-color { color: #1d4ed8; }
+        .doc-button-color { background-color: #2563eb; }
+        .doc-button-color:hover { background-color: #1e40af; }
+    </style>
+</head>
+<body class="min-h-screen p-4 sm:p-8 flex items-start justify-center">
+
+    <div id="app" class="w-full max-w-5xl">
+        <header class="text-center mb-8">
+            <h1 class="4xl font-extrabold text-gray-900 tracking-tight">Digital Forensic Verification Suite</h1>
+            <p class="text-gray-500 mt-2">Analyze media and documents with AI-powered integrity and factual checks.</p>
+            <!-- Login handled via dedicated login page -->
+        </header>
+
+        <!-- Tab Navigation -->
+        <nav class="flex border-b border-gray-200 mb-8">
+            <button id="tab-image" class="tab-button flex-1 py-3 px-4 text-center text-gray-600 transition duration-150 hover:bg-gray-50 active" onclick="appController.switchTab('image')">
+                🖼️ Image Forensics
+            </button>
+            <button id="tab-social" class="tab-button flex-1 py-3 px-4 text-center text-gray-600 transition duration-150 hover:bg-gray-50" onclick="appController.switchTab('social')">
+                💬 Social Post Verification
+            </button>
+            <button id="tab-document" class="tab-button flex-1 py-3 px-4 text-center text-gray-600 transition duration-150 hover:bg-gray-50" onclick="appController.switchTab('document')">
+                📄 Document Authenticator
+            </button>
+        </nav>
+
+        <!-- -------------------- TAB CONTENT: IMAGE FORENSICS -------------------- -->
+        <div id="imageTabContent">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- Upload & Input Card (Image) -->
+                <div class="card p-6 rounded-xl shadow-2xl border border-gray-100">
+                    <h2 class="text-2xl font-semibold mb-4 text-gray-800 flex items-center">1. Image Input</h2>
+                    <input type="file" id="imageFileInput" accept="image/*" class="w-full text-sm text-gray-500
+                        file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold
+                        file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                        onchange="appController.handleImageFileChange(event)">
+                    
+                    <div id="imagePreviewContainer" class="mt-6 flex justify-center border border-dashed border-gray-300 rounded-lg p-4 h-64 overflow-hidden hidden">
+                        <img id="imagePreview" class="max-w-full max-h-full object-contain rounded-lg shadow-md" alt="Image Preview" />
+                    </div>
+
+                    <button id="analyzeImageButton" onclick="appController.analyzeImage()" disabled
+                        class="mt-6 w-full px-4 py-3 bg-indigo-600 text-white font-bold rounded-xl shadow-lg transition duration-150 ease-in-out hover:bg-indigo-700 disabled:opacity-50 disabled:cursor-not-allowed">
+                        <span id="imageButtonText">Comprehensive Image Forensics (Authenticity Check) ✨</span>
+                        <div id="imageLoader" class="spinner h-5 w-5 border-4 border-white border-solid border-r-transparent rounded-full animate-spin mx-auto hidden"></div>
+                    </button>
+                    
+                    <div class="mt-4 grid grid-cols-2 gap-3">
+                        <button id="captionButton" onclick="appController.generateCaption()" disabled
+                            class="px-3 py-2 text-sm bg-purple-600 text-white font-semibold rounded-xl transition duration-150 hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed">
+                            Generate Accessibility Caption
+                        </button>
+                        <button id="objectsButton" onclick="appController.extractObjects()" disabled
+                            class="px-3 py-2 text-sm bg-pink-600 text-white font-semibold rounded-xl transition duration-150 hover:bg-pink-700 disabled:opacity-50 disabled:cursor-not-allowed">
+                            Extract Key Objects
+                        </button>
+                    </div>
+                </div>
+
+                <!-- Results Card (Image) -->
+                <div class="card p-6 rounded-xl shadow-2xl border border-gray-100">
+                    <h2 class="text-2xl font-semibold mb-4 text-gray-800">2. Analysis Results (Image)</h2>
+                    <div id="imageVerdictSummaryContainer" class="mb-6"><p class="italic text-gray-500 text-sm">Verdict will appear here after analysis.</p></div>
+                    
+                    <div class="mb-6">
+                        <h3 class="text-lg font-bold text-indigo-700 mb-2 border-b pb-1">Geolocation & Metadata (EXIF Mock)</h3>
+                        <div id="exifResults" class="space-y-2 text-sm text-gray-700">
+                            <p id="exifStatus" class="italic text-gray-500">Upload an image to start EXIF analysis.</p>
+                        </div>
+                    </div>
+
+                    <div id="mainAiSection" class="mt-8 pt-4 border-t border-gray-200">
+                        <h3 class="text-lg font-bold text-indigo-700 mb-2 border-b pb-1">AI Contextual Verification</h3>
+                        <div id="aiResults" class="space-y-3 text-sm"><p id="aiStatus" class="italic text-gray-500">Results will be displayed here.</p></div>
+                    </div>
+
+                    <div id="supplementalAiResults" class="mt-8 pt-4 border-t border-gray-200">
+                        <h3 class="text-lg font-bold text-gray-800 mb-4">Supplemental AI Analysis</h3>
+                        <div id="captionResult" class="mb-4 p-3 bg-white rounded-xl shadow-md border hidden"></div>
+                        <div id="objectsResult" class="p-3 bg-white rounded-xl shadow-md border hidden"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- -------------------- END TAB CONTENT: IMAGE FORENSICS -------------------- -->
+
+
+        <!-- -------------------- TAB CONTENT: SOCIAL POST VERIFICATION -------------------- -->
+        <div id="socialTabContent" class="hidden">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- Input Card (Social) -->
+                <div class="card p-6 rounded-xl shadow-2xl border border-gray-100">
+                    <h2 class="text-2xl font-semibold mb-4 text-gray-800 flex items-center">1. Enter Post Content or URL</h2>
+                    
+                    <div class="mb-4">
+                        <label for="postInput" class="block text-sm font-medium text-gray-700 mb-1">Paste Post Text or URL:</label>
+                        <textarea id="postInput" rows="4" placeholder="e.g., 'A shocking claim about the government...' or a full post URL." 
+                            class="w-full p-3 border border-gray-300 rounded-lg focus:ring-pink-500 focus:border-pink-500 resize-none" oninput="appController.checkSocialInput()"></textarea>
+                    </div>
+
+                    <button id="analyzeSocialButton" onclick="appController.analyzeSocialPost()" disabled
+                        class="w-full px-4 py-3 bg-pink-600 text-white font-bold rounded-xl shadow-lg transition duration-150 ease-in-out hover:bg-pink-700 disabled:opacity-50 disabled:cursor-not-allowed">
+                        <span id="socialButtonText">Factual Validation (Search Grounding) 💬</span>
+                        <div id="socialLoader" class="spinner h-5 w-5 border-4 border-white border-solid border-r-transparent rounded-full animate-spin mx-auto hidden"></div>
+                    </button>
+                </div>
+
+                <!-- Results Card (Social) -->
+                <div class="card p-6 rounded-xl shadow-2xl border border-gray-100">
+                    <h2 class="text-2xl font-semibold mb-4 text-gray-800">2. Factual Validation Results</h2>
+                    
+                    <div id="socialVerdictSummaryContainer" class="mb-6"><p class="italic text-gray-500 text-sm">Post verdict will appear here after analysis.</p></div>
+
+                    <div id="socialAiResults" class="space-y-3 text-sm mt-8 pt-4 border-t border-gray-200">
+                        <h3 class="text-lg font-bold text-pink-700 mb-2 border-b pb-1">AI Factual Assessment</h3>
+                        <p id="socialAiStatus" class="italic text-gray-500">Enter a post/URL and click "Factual Validation" to begin.</p>
+                    </div>
+
+                    <div id="socialSources" class="mt-6 pt-4 border-t border-gray-200 hidden">
+                        <h3 class="text-lg font-bold text-pink-700 mb-2 border-b pb-1">Grounding Sources</h3>
+                        <ul id="socialSourceList" class="mt-2 space-y-1"></ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- -------------------- END TAB CONTENT: SOCIAL POST VERIFICATION -------------------- -->
+
+        <!-- -------------------- TAB CONTENT: DOCUMENT AUTHENTICATOR -------------------- -->
+        <div id="documentTabContent" class="hidden">
+            <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                <!-- Upload & Input Card (Document) -->
+                <div class="card p-6 rounded-xl shadow-2xl border border-gray-100">
+                    <h2 class="text-2xl font-semibold mb-4 text-gray-800 flex items-center doc-primary-color">1. Document Input (PDF or TXT)</h2>
+                    <input type="file" id="documentFileInput" accept=".pdf, .txt" class="w-full text-sm text-gray-500
+                        file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold
+                        file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100"
+                        onchange="appController.handleDocumentFileChange(event)">
+                    
+                    <div id="documentPreviewContainer" class="mt-6 p-4 border border-dashed border-gray-300 rounded-lg h-32 overflow-hidden hidden">
+                        <p id="documentFileName" class="font-bold text-gray-700"></p>
+                        <p id="documentFileSize" class="text-sm text-gray-500"></p>
+                    </div>
+
+                    <button id="analyzeDocumentButton" onclick="appController.analyzeDocument()" disabled
+                        class="mt-6 w-full px-4 py-3 doc-button-color text-white font-bold rounded-xl shadow-lg transition duration-150 ease-in-out disabled:opacity-50 disabled:cursor-not-allowed">
+                        <span id="documentButtonText">Run Integrity & Factual Check 📄</span>
+                        <div id="documentLoader" class="spinner h-5 w-5 border-4 border-white border-solid border-r-transparent rounded-full animate-spin mx-auto hidden"></div>
+                    </button>
+                </div>
+
+                <!-- Results Card (Document) -->
+                <div class="card p-6 rounded-xl shadow-2xl border border-gray-100">
+                    <h2 class="text-2xl font-semibold mb-4 text-gray-800">2. Authenticator Results</h2>
+                    
+                    <div id="documentVerdictSummaryContainer" class="mb-6"><p class="italic text-gray-500 text-sm">Document verdict will appear here after analysis.</p></div>
+
+                    <div id="documentAiResults" class="space-y-3 text-sm mt-8 pt-4 border-t border-gray-200">
+                        <h3 class="text-lg font-bold doc-primary-color mb-2 border-b pb-1">AI Integrity & Factual Assessment</h3>
+                        <p id="documentAiStatus" class="italic text-gray-500">Upload a document to begin.</p>
+                    </div>
+
+                    <div id="documentSources" class="mt-6 pt-4 border-t border-gray-200 hidden">
+                        <h3 class="text-lg font-bold doc-primary-color mb-2 border-b pb-1">Grounding Sources (for Factual Claims)</h3>
+                        <ul id="documentSourceList" class="mt-2 space-y-1"></ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- -------------------- END TAB CONTENT: DOCUMENT AUTHENTICATOR -------------------- -->
+
+
+        <!-- Notification/Modal Area -->
+        <div id="notification" class="fixed inset-0 bg-gray-900 bg-opacity-75 z-50 flex items-center justify-center hidden" onclick="uiManager.hideNotification()">
+            <div class="bg-white p-6 rounded-xl shadow-2xl max-w-sm mx-4" onclick="event.stopPropagation()">
+                <h3 class="text-xl font-bold text-red-600 mb-3">Error</h3>
+                <p id="notificationMessage" class="text-gray-700"></p>
+                <button onclick="uiManager.hideNotification()" class="mt-4 w-full bg-red-500 text-white py-2 rounded-xl hover:bg-red-600">Close</button>
+            </div>
+        </div>
+    </div>
+
+    <script type="module">
+        // --- 1. CONFIGURATION ---
+        const CONFIG = {
+            API_KEY: "", 
+            API_URL: "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent",
+            MAX_RETRIES: 3, 
+        };
+
+        // Global state for files
+        let uploadedImageFile = null;
+        let uploadedDocumentFile = null;
+
+        // --- 2. API HANDLER (Simulates Microservice: Data Access Layer) ---
+        class ApiHandler {
+            /**
+             * Fetches data from the Gemini API with exponential backoff for resilience.
+             */
+            static async makeApiCall(payload, retries = CONFIG.MAX_RETRIES) {
+                for (let i = 0; i < retries; i++) {
+                    try {
+                        const response = await fetch(`${CONFIG.API_URL}?key=${CONFIG.API_KEY}`, {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify(payload)
+                        });
+
+                        if (response.ok) {
+                            return await response.json();
+                        } 
+                        
+                        const status = response.status;
+                        const isRetryableError = status === 429 || status === 401; 
+                        
+                        if (isRetryableError && i < retries - 1) {
+                            const delay = status === 429 ? Math.pow(2, i) * 1000 : 500; 
+                            await new Promise(resolve => setTimeout(resolve, delay));
+                            continue; 
+                        } else {
+                            const errorBody = await response.text();
+                            throw new Error(`API call failed: ${status} - ${errorBody}`);
+                        }
+                    } catch (error) {
+                        if (error.message.includes('Failed to fetch') && i < retries - 1) {
+                            const delay = Math.pow(2, i) * 1000;
+                            await new Promise(resolve => setTimeout(resolve, delay));
+                            continue;
+                        }
+                        if (i === retries - 1) throw error; 
+                    }
+                }
+            }
+        }
+
+
+        // --- 3. DATA PROCESSOR (Simulates Microservice: Business Logic) ---
+        class DataProcessor {
+            /**
+             * Extracts text and sources from the raw API result.
+             * @param {object} result - The raw JSON response from the API.
+             * @returns {{text: string, sources: Array<{uri: string, title: string}>}}
+             */
+            static processResponse(result) {
+                const candidate = result.candidates?.[0];
+
+                if (!candidate || !candidate.content?.parts?.[0]?.text) {
+                    throw new Error("AI did not return a valid response structure.");
+                }
+
+                const text = candidate.content.parts[0].text;
+                let sources = [];
+                const groundingMetadata = candidate.groundingMetadata;
+
+                if (groundingMetadata && groundingMetadata.groundingAttributions) {
+                    sources = groundingMetadata.groundingAttributions
+                        .map(attribution => ({
+                            uri: attribution.web?.uri,
+                            title: attribution.web?.title,
+                        }))
+                        .filter(source => source.uri && source.title);
+                }
+                return { text, sources };
+            }
+
+            /**
+             * Generates the HTML for the final verdict box based on text analysis.
+             * @param {string} text - The AI's full analysis text.
+             * @param {string} type - 'image', 'social', or 'document'.
+             * @returns {string} HTML string for the verdict box.
+             */
+            static generateVerdictBox(text, type) {
+                let verdictLabel, verdictColor, title;
+                const lowerText = text.toLowerCase();
+
+                if (type === 'image') {
+                    title = "FINAL VERDICT SUMMARY";
+                    if (lowerText.includes('alteration') || lowerText.includes('manipulation') || lowerText.includes('inconsistent') || lowerText.includes('artifact') || lowerText.includes('ai-generated')) {
+                        verdictLabel = "POTENTIALLY MODIFIED";
+                        verdictColor = "bg-red-100 text-red-800 border-red-400";
+                    } else {
+                        verdictLabel = "LIKELY GENUINE";
+                        verdictColor = "bg-green-100 text-green-800 border-green-400";
+                    }
+                } else if (type === 'social' || type === 'document') {
+                    title = type === 'social' ? "FACTUAL ACCURACY SUMMARY" : "DOCUMENT INTEGRITY SUMMARY";
+                    if (lowerText.includes('false') || lowerText.includes('misleading') || lowerText.includes('red flag') || lowerText.includes('inconsistent')) {
+                        verdictLabel = type === 'social' ? "LIKELY MISLEADING" : "POTENTIAL RED FLAG";
+                        verdictColor = "bg-red-100 text-red-800 border-red-400";
+                    } else if (lowerText.includes('accurate') || lowerText.includes('supported') || lowerText.includes('consistent') || lowerText.includes('intact')) {
+                        verdictLabel = type === 'social' ? "LIKELY ACCURATE" : "INTEGRITY LIKELY INTACT";
+                        verdictColor = "bg-green-100 text-green-800 border-green-400";
+                    } else {
+                        verdictLabel = "VERIFICATION UNCERTAIN";
+                        verdictColor = "bg-yellow-100 text-yellow-800 border-yellow-400";
+                    }
+                }
+                
+                return `
+                    <div class="p-4 rounded-xl border-2 ${verdictColor} font-bold shadow-lg">
+                        <h4 class="text-xl mb-2">${title}</h4>
+                        <p class="font-normal text-gray-700 text-sm mb-3">Analysis complete. Review the full assessment for details.</p>
+                        <span class="text-2xl tracking-wider text-black">${verdictLabel}</span>
+                    </div>
+                `;
+            }
+
+            /**
+             * Converts ArrayBuffer to Base64 string for the API payload.
+             */
+            static arrayBufferToBase64(buffer) {
+                let binary = '';
+                const bytes = new Uint8Array(buffer);
+                const len = bytes.byteLength;
+                for (let i = 0; i < len; i++) {
+                    binary += String.fromCharCode(bytes[i]);
+                }
+                return btoa(binary);
+            }
+        }
+
+
+        // --- 4. UI MANAGER (Simulates Microservice: Presentation Layer) ---
+        class UiManager {
+            constructor() {
+                this.notificationElement = document.getElementById('notification');
+                this.notificationMessageElement = document.getElementById('notificationMessage');
+            }
+
+            showNotification(message) {
+                this.notificationMessageElement.textContent = message;
+                this.notificationElement.classList.remove('hidden');
+            }
+
+            hideNotification() {
+                this.notificationElement.classList.add('hidden');
+            }
+
+            /**
+             * Manages the state of all UI elements (buttons and loaders) for a given context.
+             * @param {boolean} isLoading - Whether a task is currently running.
+             * @param {string} context - 'image', 'social', or 'document'.
+             * @param {boolean} isFileReady - Only for image/document.
+             */
+            setUiState(isLoading = false, context = 'image', isFileReady = false) {
+                if (context === 'image') {
+                    const mainButton = document.getElementById('analyzeImageButton');
+                    const captionButton = document.getElementById('captionButton');
+                    const objectsButton = document.getElementById('objectsButton');
+                    const loader = document.getElementById('imageLoader');
+                    const buttonText = document.getElementById('imageButtonText');
+
+                    loader.classList.toggle('hidden', !isLoading);
+                    const disabledState = isLoading || !isFileReady;
+                    mainButton.disabled = disabledState;
+                    captionButton.disabled = disabledState;
+                    objectsButton.disabled = disabledState;
+                    buttonText.textContent = isLoading ? 'Analyzing...' : 'Comprehensive Image Forensics (Authenticity Check) ✨';
+                    
+                } else if (context === 'social') {
+                    const socialButton = document.getElementById('analyzeSocialButton');
+                    const socialLoader = document.getElementById('socialLoader');
+                    const socialButtonText = document.getElementById('socialButtonText');
+                    const postInput = document.getElementById('postInput');
+                    
+                    socialLoader.classList.toggle('hidden', !isLoading);
+                    socialButton.disabled = isLoading || postInput.value.trim() === '';
+                    socialButtonText.textContent = isLoading ? 'Validating...' : 'Factual Validation (Search Grounding) 💬';
+                    
+                } else if (context === 'document') {
+                    const docButton = document.getElementById('analyzeDocumentButton');
+                    const docLoader = document.getElementById('documentLoader');
+                    const docButtonText = document.getElementById('documentButtonText');
+                    
+                    docLoader.classList.toggle('hidden', !isLoading);
+                    docButton.disabled = isLoading || !isFileReady;
+                    docButtonText.textContent = isLoading ? 'Analyzing Document...' : 'Run Integrity & Factual Check 📄';
+                }
+            }
+            
+            /**
+             * Renders a standardized loading/progress bar.
+             * @param {string} elementId - ID of the container element.
+             * @param {string} message - Message to display.
+             * @param {string} color - Tailwind color class (e.g., 'indigo-600').
+             */
+            renderLoading(elementId, message, color = 'indigo-600') {
+                 document.getElementById(elementId).innerHTML = `
+                    <h3 class="text-lg font-bold text-gray-800 mb-2 border-b pb-1">AI Contextual Verification</h3>
+                    <div class="w-full bg-gray-200 rounded-full h-2.5 mb-3">
+                        <div class="bg-${color} h-2.5 rounded-full animate-pulse" style="width: 95%"></div>
+                    </div>
+                    <p class="text-${color}">${message}</p>
+                `;
+            }
+
+            /**
+             * Renders the main AI analysis result.
+             */
+            renderAiAnalysis(elementId, text, color = 'indigo-700') {
+                document.getElementById(elementId).innerHTML = `
+                    <h3 class="text-lg font-bold text-${color} mb-2 border-b pb-1">AI Contextual Verification</h3>
+                    <div class="p-4 bg-gray-50 rounded-lg shadow-inner">
+                        <p class="mt-2 text-gray-800">${text.replace(/\n/g, '<br>')}</p>
+                    </div>
+                `;
+            }
+
+            /**
+             * Renders the sources list.
+             */
+            renderSources(sourceDivId, sourceListId, sources, color = 'pink-700') {
+                const sourceDiv = document.getElementById(sourceDivId);
+                const sourceList = document.getElementById(sourceListId);
+
+                if (sources.length > 0) {
+                    sourceDiv.classList.remove('hidden');
+                    const sourceHtml = sources.map(s => `
+                        <li class="list-disc ml-5 text-${color} hover:text-blue-800 transition">
+                            <a href="${s.uri}" target="_blank" rel="noopener noreferrer" title="${s.title}">
+                                ${s.title.length > 50 ? s.title.substring(0, 50) + '...' : s.title}
+                            </a>
+                        </li>
+                    `).join('');
+                    sourceList.innerHTML = sourceHtml;
+                } else {
+                     sourceDiv.classList.add('hidden');
+                }
+            }
+            
+            /**
+             * Placeholder for EXIF analysis results.
+             */
+            renderExifData(file) {
+                const exifResults = document.getElementById('exifResults');
+                const exifStatusElement = document.getElementById('exifStatus');
+
+                if (!exifResults || !exifStatusElement) return;
+                
+                exifStatusElement.classList.add('hidden');
+                exifResults.innerHTML = '';
+
+                const mockExifData = {
+                    'Image Taken On': file.lastModifiedDate ? file.lastModifiedDate.toLocaleDateString() : 'N/A',
+                    'File Type': file.type,
+                    'File Size': (file.size / 1024 / 1024).toFixed(2) + ' MB',
+                };
+
+                const hasGeoData = file.size % 2 === 0; 
+                
+                if (hasGeoData) {
+                    const lat = (Math.random() * 90 * (Math.random() > 0.5 ? 1 : -1)).toFixed(6);
+                    const lon = (Math.random() * 180 * (Math.random() > 0.5 ? 1 : -1)).toFixed(6);
+                    const mapUrl = `https://www.google.com/maps/search/?api=1&query=${lat},${lon}`;
+                    
+                    mockExifData['Coordinates (Simulated)'] = `<span class="font-semibold text-green-600">Lat: ${lat}, Lon: ${lon}</span>`;
+                    mockExifData['GPS Tag Status'] = 'Coordinates Found (Mocked)';
+
+                    mockExifData['Geolocation Map Preview'] = `
+                        <div class="mt-2">
+                            <a href="${mapUrl}" target="_blank" rel="noopener noreferrer" class="block group">
+                                <img src="https://placehold.co/400x150/93c5fd/1e3a8a?text=MAP+PREVIEW+(${lat},${lon})" 
+                                     alt="Google Map Preview" 
+                                     class="w-full h-auto rounded-lg shadow-md transition duration-300 group-hover:opacity-90"
+                                     style="max-width: 100%;">
+                            </a>
+                            <p class="mt-1 text-xs text-blue-600 text-center">Click map preview to open location</p>
+                        </div>
+                    `;
+                } else {
+                    mockExifData['GPS Tag Status'] = '<span class="font-semibold text-red-600">No GPS Coordinates Found in EXIF Data.</span>';
+                }
+
+                for (const [key, value] of Object.entries(mockExifData)) {
+                    if (key === 'Geolocation Map Preview') {
+                        const mapDiv = document.createElement('div');
+                        mapDiv.innerHTML = value;
+                        exifResults.appendChild(mapDiv);
+                    } else {
+                        const p = document.createElement('p');
+                        p.innerHTML = `<strong class="text-gray-900">${key}:</strong> ${value}`;
+                        exifResults.appendChild(p);
+                    }
+                }
+            }
+
+        }
+
+
+        // --- 5. APPLICATION CONTROLLER (The Orchestrator) ---
+        class AppController {
+            constructor(uiManager, apiHandler) {
+                this.uiManager = uiManager;
+                this.apiHandler = apiHandler;
+            }
+
+            /**
+             * Toggles between the three main tabs.
+             */
+            switchTab(tabName) {
+                const tabs = ['image', 'social', 'document'];
+                tabs.forEach(tab => {
+                    document.getElementById(`${tab}TabContent`).classList.toggle('hidden', tab !== tabName);
+                    document.getElementById(`tab-${tab}`).classList.toggle('active', tab === tabName);
+                });
+                
+                // Ensure all UI states are reset/checked when switching tabs
+                this.uiManager.setUiState(false, 'image', uploadedImageFile !== null);
+                this.uiManager.setUiState(false, 'social'); 
+                this.uiManager.setUiState(false, 'document', uploadedDocumentFile !== null);
+            }
+
+            // --- Image Tab Logic ---
+
+            handleImageFileChange(event) {
+                const file = event.target.files[0];
+                const previewContainer = document.getElementById('imagePreviewContainer');
+                const imagePreview = document.getElementById('imagePreview');
+
+                if (file && file.type.startsWith('image/')) {
+                    uploadedImageFile = file;
+                    this.uiManager.renderExifData(uploadedImageFile);
+
+                    const reader = new FileReader();
+                    reader.onload = (e) => {
+                        imagePreview.src = e.target.result;
+                        previewContainer.classList.remove('hidden');
+                        document.getElementById('aiResults').innerHTML = '<p class="italic text-gray-500">Image loaded. Ready to analyze.</p>';
+                        document.getElementById('imageVerdictSummaryContainer').innerHTML = '<p class="italic text-gray-500 text-sm">Verdict will appear here after analysis.</p>';
+                        document.getElementById('captionResult').classList.add('hidden');
+                        document.getElementById('objectsResult').classList.add('hidden');
+                        this.uiManager.setUiState(false, 'image', true);
+                    };
+                    reader.onerror = () => this.uiManager.showNotification("Could not read image file.");
+                    reader.readAsDataURL(file); 
+                } else {
+                    uploadedImageFile = null;
+                    previewContainer.classList.add('hidden');
+                    document.getElementById('exifResults').innerHTML = '<p id="exifStatus" class="italic text-gray-500">Please select a valid image file.</p>';
+                    this.uiManager.setUiState(false, 'image', false); 
+                }
+            }
+            
+            async analyzeImage(task = 'forensics') {
+                if (!uploadedImageFile) { this.uiManager.showNotification("Please upload an image before analyzing."); return; }
+                
+                const taskMap = {
+                    forensics: { prompt: "Perform a forensic-style visual analysis of this image. Describe the content, focusing specifically on looking for **signs of digital manipulation or artificial generation** (e.g., inconsistent blending, unnatural texture). Then, use Google Search grounding to find the image's origin and common usage. Based on the visual inspection and search results, provide a final **Forensic Authenticity Assessment**.", tools: [{ "google_search": {} }], targetId: 'aiResults', verdictId: 'imageVerdictSummaryContainer' },
+                    caption: { prompt: "Generate a detailed, objective, and accessibility-compliant caption (alt-text) for this image.", tools: null, targetId: 'captionResult' },
+                    objects: { prompt: "List the 5 most prominent objects, brands, or entities visible in the image in a concise list.", tools: null, targetId: 'objectsResult' }
+                };
+                
+                const config = taskMap[task];
+                const isMainAnalysis = task === 'forensics';
+
+                if (isMainAnalysis) {
+                    this.uiManager.setUiState(true, 'image', true);
+                    this.uiManager.renderLoading(config.targetId, "Running AI Content Analysis and Contextual Grounding...", 'indigo-600');
+                    document.getElementById(config.verdictId).innerHTML = '';
+                } else {
+                    document.getElementById(config.targetId).innerHTML = `<div class="p-3 text-blue-600 bg-blue-50 rounded-lg animate-pulse">Analyzing...</div>`;
+                    document.getElementById(config.targetId).classList.remove('hidden');
+                    // Temporarily disable all supplementals
+                    document.getElementById('captionButton').disabled = true;
+                    document.getElementById('objectsButton').disabled = true;
+                }
+
+                try {
+                    const reader = new FileReader();
+                    reader.readAsArrayBuffer(uploadedImageFile);
+                    await new Promise((resolve, reject) => { reader.onload = resolve; reader.onerror = reject; });
+                    const base64Data = DataProcessor.arrayBufferToBase64(reader.result);
+
+                    const payload = { 
+                        contents: [{ role: "user", parts: [{ text: config.prompt }, { inlineData: { mimeType: uploadedImageFile.type, data: base64Data } }] }], 
+                        tools: config.tools,
+                    };
+
+                    const result = await this.apiHandler.makeApiCall(payload);
+                    const { text } = DataProcessor.processResponse(result);
+                    
+                    if (isMainAnalysis) {
+                        document.getElementById(config.verdictId).innerHTML = DataProcessor.generateVerdictBox(text, 'image');
+                        this.uiManager.renderAiAnalysis(config.targetId, text, 'indigo-700');
+                    } else {
+                        const title = task === 'caption' ? "Accessibility Caption" : "Extracted Objects & Entities";
+                        document.getElementById(config.targetId).innerHTML = `
+                            <strong class="text-gray-800">${title}:</strong>
+                            <p class="mt-1 text-gray-700">${text.replace(/\n/g, '<br>')}</p>
+                        `;
+                    }
+
+                } catch (error) {
+                    console.error(`Image analysis (${task}) failed:`, error);
+                    this.uiManager.showNotification(`Image analysis failed. ${error.message.split('-')[0]}`);
+                    document.getElementById(config.targetId).innerHTML = `<p class="text-red-500 font-semibold">Analysis failed. ${error.message.split('-')[0]}</p>`;
+                } finally {
+                    if (isMainAnalysis) {
+                        this.uiManager.setUiState(false, 'image', true);
+                    } else {
+                        // Re-enable supplementals
+                        document.getElementById('captionButton').disabled = false;
+                        document.getElementById('objectsButton').disabled = false;
+                    }
+                }
+            }
+            
+            generateCaption() {
+                this.analyzeImage('caption');
+            }
+
+            extractObjects() {
+                this.analyzeImage('objects');
+            }
+
+
+            // --- Social Tab Logic ---
+            checkSocialInput() {
+                const postInput = document.getElementById('postInput');
+                this.uiManager.setUiState(false, 'social', postInput.value.trim() !== ''); 
+            }
+
+            async analyzeSocialPost() {
+                const postInput = document.getElementById('postInput');
+                const postText = postInput.value.trim();
+
+                if (!postText) { this.uiManager.showNotification("Please enter text or a URL to verify."); return; }
+
+                this.uiManager.setUiState(true, 'social');
+                const aiResults = document.getElementById('socialAiResults');
+                const verdictSummaryContainer = document.getElementById('socialVerdictSummaryContainer');
+                
+                aiResults.innerHTML = `
+                    <h3 class="text-lg font-bold text-pink-700 mb-2 border-b pb-1">AI Factual Assessment</h3>
+                    <div class="w-full bg-gray-200 rounded-full h-2.5 mb-3">
+                        <div class="bg-pink-600 h-2.5 rounded-full animate-pulse" style="width: 95%"></div>
+                    </div>
+                    <p class="text-pink-600">Checking claims against real-time information...</p>
+                `;
+                verdictSummaryContainer.innerHTML = '';
+                document.getElementById('socialSources').classList.add('hidden');
+
+                try {
+                    const systemInstruction = "You are a highly objective factual verification agent. Your task is to analyze the user's input (a social media post or claim) and use Google Search grounding to determine its factual accuracy. Provide a concise judgment on whether the claims are supported by current information. Focus on the core claim and its supporting evidence. Conclude with a clear statement on the claim's accuracy.";
+                    
+                    const prompt = `Fact-check this content: "${postText}"`;
+                    const payload = {
+                        contents: [{ parts: [{ text: prompt }] }],
+                        tools: [{ "google_search": {} }],
+                        systemInstruction: { parts: [{ text: systemInstruction }] }
+                    };
+
+                    const result = await this.apiHandler.makeApiCall(payload);
+                    const { text, sources } = DataProcessor.processResponse(result);
+
+                    verdictSummaryContainer.innerHTML = DataProcessor.generateVerdictBox(text, 'social');
+                    this.uiManager.renderAiAnalysis('socialAiResults', text, 'pink-700');
+                    this.uiManager.renderSources('socialSources', 'socialSourceList', sources, 'pink-700');
+                    
+                } catch (error) {
+                    console.error("Social post analysis failed:", error);
+                    this.uiManager.showNotification(`Factual analysis failed. ${error.message.split('-')[0]}`);
+                    aiResults.innerHTML = `<p class="text-red-500 font-semibold">Analysis failed. Error: ${error.message.split('-')[0]}</p>`;
+                    document.getElementById('socialSources').classList.add('hidden');
+                } finally {
+                    this.uiManager.setUiState(false, 'social');
+                }
+            }
+
+
+            // --- Document Tab Logic ---
+
+            handleDocumentFileChange(event) {
+                const file = event.target.files[0];
+                const previewContainer = document.getElementById('documentPreviewContainer');
+                const fileNameElement = document.getElementById('documentFileName');
+                const fileSizeElement = document.getElementById('documentFileSize');
+                
+                const isValidFile = file && (file.type === 'application/pdf' || file.type === 'text/plain' || file.name.endsWith('.pdf') || file.name.endsWith('.txt'));
+
+                if (isValidFile) {
+                    uploadedDocumentFile = file;
+                    fileNameElement.textContent = file.name;
+                    fileSizeElement.textContent = `Size: ${(file.size / 1024).toFixed(2)} KB`;
+                    previewContainer.classList.remove('hidden');
+
+                    document.getElementById('documentVerdictSummaryContainer').innerHTML = '<p class="italic text-gray-500 text-sm">Document loaded. Ready to analyze.</p>';
+                    document.getElementById('documentAiResults').innerHTML = `<h3 class="text-lg font-bold doc-primary-color mb-2 border-b pb-1">AI Integrity & Factual Assessment</h3><p id="documentAiStatus" class="italic text-gray-500">Document loaded. Ready to analyze.</p>`;
+                    document.getElementById('documentSources').classList.add('hidden');
+
+                    this.uiManager.setUiState(false, 'document', true);
+                } else {
+                    uploadedDocumentFile = null;
+                    previewContainer.classList.add('hidden');
+                    document.getElementById('documentAiStatus').textContent = 'Please select a valid PDF or TXT file.';
+                    this.uiManager.setUiState(false, 'document', false);
+                }
+            }
+
+            async analyzeDocument() {
+                if (!uploadedDocumentFile) {
+                    this.uiManager.showNotification("Please upload a PDF or TXT document before analyzing.");
+                    return;
+                }
+                
+                this.uiManager.setUiState(true, 'document');
+                const aiResults = document.getElementById('documentAiResults');
+                const verdictSummaryContainer = document.getElementById('documentVerdictSummaryContainer');
+                
+                this.uiManager.renderLoading(aiResults.id, "Running Document Integrity and Factual Check...", 'blue-600');
+                verdictSummaryContainer.innerHTML = '';
+                document.getElementById('documentSources').classList.add('hidden');
+
+                try {
+                    const reader = new FileReader();
+                    reader.readAsArrayBuffer(uploadedDocumentFile);
+                    await new Promise((resolve, reject) => { reader.onload = resolve; reader.onerror = reject; });
+                    const base64Data = DataProcessor.arrayBufferToBase64(reader.result);
+
+                    const mimeType = uploadedDocumentFile.type === 'application/pdf' ? 'application/pdf' : 'text/plain';
+
+                    const systemInstruction = "You are a neutral document integrity specialist and forensic analyst. Your task is two-fold: First, check the document's structure and language for integrity red flags (e.g., inconsistent fonts, abrupt tone shifts, excessively generic or repetitive text). Second, fact-check the main claims or statistics presented using the Google Search grounding tool. Provide a professional, concise analysis, focusing on the integrity and factual accuracy. Conclude with a clear verdict.";
+                    
+                    const prompt = `Analyze this uploaded document file (Type: ${mimeType}, Name: ${uploadedDocumentFile.name}).`;
+
+                    const payload = {
+                        contents: [
+                            { role: "user", parts: [{ text: prompt }, { inlineData: { mimeType: mimeType, data: base64Data } }] }
+                        ],
+                        tools: [{ "google_search": {} }],
+                        systemInstruction: { parts: [{ text: systemInstruction }] }
+                    };
+
+                    const result = await this.apiHandler.makeApiCall(payload);
+                    const { text, sources } = DataProcessor.processResponse(result);
+                    
+                    verdictSummaryContainer.innerHTML = DataProcessor.generateVerdictBox(text, 'document');
+                    this.uiManager.renderAiAnalysis('documentAiResults', text, 'doc-primary-color');
+                    this.uiManager.renderSources('documentSources', 'documentSourceList', sources, 'doc-primary-color');
+
+                } catch (error) {
+                    console.error("Document analysis failed:", error);
+                    this.uiManager.showNotification(`Document analysis failed. ${error.message.split('-')[0]}`);
+                    aiResults.innerHTML = `<p class="text-red-500 font-semibold">Document analysis failed. Error: ${error.message.split('-')[0]}</p>`;
+                    verdictSummaryContainer.innerHTML = '';
+                    document.getElementById('documentSources').classList.add('hidden');
+                } finally {
+                    this.uiManager.setUiState(false, 'document', true);
+                }
+            }
+        }
+
+        // --- 6. INITIALIZATION ---
+        const uiManager = new UiManager();
+        const apiHandler = ApiHandler;
+        const appController = new AppController(uiManager, apiHandler);
+
+        // Expose appController globally for HTML onclick events
+        window.appController = appController;
+        window.uiManager = uiManager; // Expose for notification close button
+
+        // --- 7. AUTH & LOGGING (Client-side) ---
+        // We'll use a session token stored in localStorage. The dedicated login page issues the token.
+        class SessionManager {
+            static getToken() { return localStorage.getItem('sessionToken'); }
+            static getUser() { return localStorage.getItem('sessionUser'); }
+            static setSession(user, token) { localStorage.setItem('sessionToken', token); localStorage.setItem('sessionUser', user); }
+            static clearSession() { localStorage.removeItem('sessionToken'); localStorage.removeItem('sessionUser'); }
+            static isAuthenticated() { return !!this.getToken(); }
+        }
+
+        class LogManager {
+            static async sendLog(entry) {
+                try {
+                    const token = SessionManager.getToken();
+                    await fetch('/log', {
+                        method: 'POST', headers: { 'Content-Type': 'application/json', 'x-session-token': token || '' },
+                        body: JSON.stringify(entry)
+                    });
+                } catch (e) {
+                    console.warn('Could not send log to server', e);
+                }
+            }
+        }
+
+        // Instrumentation: require login (via session token) before running analyses and include token in logs
+        const originalAnalyzeImage = appController.analyzeImage.bind(appController);
+        appController.analyzeImage = async function(task = 'forensics') {
+            if (!SessionManager.isAuthenticated()) { uiManager.showNotification('Please sign in to run analyses.'); window.location.href = '/login.html'; return; }
+            const user = SessionManager.getUser();
+            await LogManager.sendLog({ type: 'analysis_start', user, category: 'image', task, timestamp: new Date().toISOString(), fileName: uploadedImageFile ? uploadedImageFile.name : null });
+            try {
+                const result = await originalAnalyzeImage(task);
+                await LogManager.sendLog({ type: 'analysis_end', user, category: 'image', task, timestamp: new Date().toISOString(), success: true });
+                return result;
+            } catch (e) {
+                await LogManager.sendLog({ type: 'analysis_end', user, category: 'image', task, timestamp: new Date().toISOString(), success: false, error: e.message });
+                throw e;
+            }
+        };
+
+        const originalAnalyzeSocialPost = appController.analyzeSocialPost.bind(appController);
+        appController.analyzeSocialPost = async function() {
+            if (!SessionManager.isAuthenticated()) { uiManager.showNotification('Please sign in to run analyses.'); window.location.href = '/login.html'; return; }
+            const user = SessionManager.getUser();
+            await LogManager.sendLog({ type: 'analysis_start', user, category: 'social', timestamp: new Date().toISOString() });
+            try {
+                const res = await originalAnalyzeSocialPost();
+                await LogManager.sendLog({ type: 'analysis_end', user, category: 'social', timestamp: new Date().toISOString(), success: true });
+                return res;
+            } catch (e) {
+                await LogManager.sendLog({ type: 'analysis_end', user, category: 'social', timestamp: new Date().toISOString(), success: false, error: e.message });
+                throw e;
+            }
+        };
+
+        const originalAnalyzeDocument = appController.analyzeDocument.bind(appController);
+        appController.analyzeDocument = async function() {
+            if (!SessionManager.isAuthenticated()) { uiManager.showNotification('Please sign in to run analyses.'); window.location.href = '/login.html'; return; }
+            const user = SessionManager.getUser();
+            await LogManager.sendLog({ type: 'analysis_start', user, category: 'document', timestamp: new Date().toISOString(), fileName: uploadedDocumentFile ? uploadedDocumentFile.name : null });
+            try {
+                const res = await originalAnalyzeDocument();
+                await LogManager.sendLog({ type: 'analysis_end', user, category: 'document', timestamp: new Date().toISOString(), success: true });
+                return res;
+            } catch (e) {
+                await LogManager.sendLog({ type: 'analysis_end', user, category: 'document', timestamp: new Date().toISOString(), success: false, error: e.message });
+                throw e;
+            }
+        };
+
+    </script>
+</body>
+</html>

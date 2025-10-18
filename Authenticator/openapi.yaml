@@ -1,0 +1,135 @@
+openapi: 3.0.1
+info:
+  title: Forensic Suite API
+  description: Local demo API for the forensic verification suite (register, login, log)
+  version: 1.0.0
+servers:
+  - url: http://localhost:3000
+components:
+  securitySchemes:
+    SessionToken:
+      type: apiKey
+      in: header
+      name: x-session-token
+  schemas:
+    User:
+      type: object
+      properties:
+        username:
+          type: string
+        createdAt:
+          type: string
+          format: date-time
+    LogEntry:
+      type: object
+      properties:
+        type:
+          type: string
+        message:
+          type: string
+        _user:
+          type: string
+        _ts:
+          type: string
+          format: date-time
+paths:
+  /api/register:
+    post:
+      summary: Register a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [username, password]
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+      responses:
+        '200':
+          description: Registered
+        '409':
+          description: User exists
+  /api/login:
+    post:
+      summary: Login and obtain a session token
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [username, password]
+              properties:
+                username:
+                  type: string
+                password:
+                  type: string
+      responses:
+        '200':
+          description: Returns token
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ok:
+                    type: boolean
+                  token:
+                    type: string
+        '401':
+          description: Invalid credentials
+  /log:
+    post:
+      summary: Protected log endpoint
+      parameters:
+        - name: x-session-token
+          in: header
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                type:
+                  type: string
+                message:
+                  type: string
+      responses:
+        '200':
+          description: Log appended
+        '401':
+          description: Unauthorized
+  /admin/logs:
+    get:
+      summary: Read raw logs (admin only)
+      security:
+        - SessionToken: []
+      responses:
+        '200':
+          description: Raw log text
+          content:
+            text/plain:
+              schema:
+                type: string
+  /admin/users:
+    get:
+      summary: List registered users (admin only)
+      security:
+        - SessionToken: []
+      responses:
+        '200':
+          description: JSON list of users
+          content:
+            application/json:
+              schema:
+                type: object
+                additionalProperties:
+                  $ref: '#/components/schemas/User'

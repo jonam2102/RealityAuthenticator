@@ -1,0 +1,12 @@
+{
+  "smoketest": {
+    "salt": "73045b8707b3b08a4fa11f052389ba79",
+    "hash": "52a8a203a195e79eebfe53f4abab77d3f2c017f3b99ee5a664290c1465228ec40351dc7a06628edec664cab273721054d5d97d4b3b3f70d6e9bbe1860c4c712a",
+    "createdAt": "2025-10-16T10:23:35.548Z"
+  },
+  "admin": {
+    "salt": "c6f2fc7021e9b42b681418d806a7c5aa",
+    "hash": "e0105b407f1274f4765d4b2720c7250cba9e4d3fd7138e6ade590ba0008b2b1e4e8ecca5ae2dde3032b49220443ee460ae0e0ddae44cb9f4c401b158b8b0eaf3",
+    "createdAt": "2025-10-17T03:32:59.591Z"
+  }
+}

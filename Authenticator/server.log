@@ -1,0 +1,6 @@
+
+> authenticator-local@1.0.0 start
+> node server.js
+
+Swagger UI mounted at /docs
+Server running on http://localhost:3000
