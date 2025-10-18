@@ -1,7 +1,6 @@
-# Authenticator - Local Logging Demo
+# Authenticator - This is a tool that allows you to validate forensic aspects of real word posts and status using Gemini AI 
 
 This workspace is a self-contained demo of a small forensic verification UI and a tiny Node/Express backend that supports:
-
 
 Quick start (requires Node.js):
 
