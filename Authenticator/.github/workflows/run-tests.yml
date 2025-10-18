@@ -1,0 +1,34 @@
+name: Build and Run Tests
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build Docker image
+        run: docker build -t authenticator-node:ci -f Dockerfile .
+      - name: Run container
+        run: |
+          docker run -d --name authenticator-ci -p 3000:3000 \
+            -v $GITHUB_WORKSPACE/db:/usr/src/app/db \
+            -v $GITHUB_WORKSPACE/logs:/usr/src/app/logs \
+            authenticator-node:ci
+      - name: Wait for readiness
+        run: |
+          for i in {1..30}; do
+            if curl -sSf http://localhost:3000/ >/dev/null; then echo ready && break; fi
+            sleep 1
+          done
+      - name: Install deps & run tests
+        run: |
+          npm ci --no-audit --no-fund
+          npm test
+      - name: Tear down
+        if: always()
+        run: docker rm -f authenticator-ci || true

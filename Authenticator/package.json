@@ -4,8 +4,9 @@
   "description": "Local demo server for forensic suite with file-based NoSQL DB",
   "main": "server.js",
   "scripts": {
-    "start": "node server.js",
-    "smoke-test": "node ./scripts/smokeTest.js"
+  "start": "node server.js",
+  "smoke-test": "node ./scripts/smokeTest.js",
+  "test": "node ./tests/run-tests.js"
   },
   "dependencies": {
     "express": "^4.18.2",

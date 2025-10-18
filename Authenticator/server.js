@@ -42,6 +42,9 @@ function hashPassword(password, salt = null) {
 
 function createToken() { return crypto.randomBytes(32).toString('hex'); }
 
+// Session TTL in milliseconds (default: 7 days)
+const SESSION_TTL = (process.env.SESSION_TTL_MS) ? parseInt(process.env.SESSION_TTL_MS, 10) : 7 * 24 * 60 * 60 * 1000;
+
 ensureDirs();
 
 // Serve static files (index.html, login.html, etc.)
@@ -56,7 +59,9 @@ app.post('/api/register', (req, res) => {
   if (users[username]) return res.status(409).json({ ok: false, error: 'user_exists' });
 
   const { salt, hash } = hashPassword(password);
-  users[username] = { salt, hash, createdAt: new Date().toISOString() };
+  // allow optional roles array in registration body (admin provisioning should be protected in prod)
+  const roles = Array.isArray(req.body.roles) ? req.body.roles : [];
+  users[username] = { salt, hash, roles, createdAt: new Date().toISOString() };
   writeJson(USERS_FILE, users);
   res.json({ ok: true });
 });
@@ -88,8 +93,17 @@ function verifyToken(req, res, next) {
   const token = req.headers['x-session-token'] || req.query.token;
   if (!token) return res.status(401).json({ ok: false, error: 'no_token' });
   const sessions = readJson(SESSIONS_FILE);
-  if (!sessions[token]) return res.status(401).json({ ok: false, error: 'invalid_token' });
-  req.sessionUser = sessions[token].username;
+  const entry = sessions[token];
+  if (!entry) return res.status(401).json({ ok: false, error: 'invalid_token' });
+  // Enforce TTL
+  const created = new Date(entry.createdAt).getTime();
+  if (Date.now() - created > SESSION_TTL) {
+    // expired - remove the session and return 401
+    delete sessions[token];
+    writeJson(SESSIONS_FILE, sessions);
+    return res.status(401).json({ ok: false, error: 'token_expired' });
+  }
+  req.sessionUser = entry.username;
   next();
 }
 
@@ -102,10 +116,28 @@ app.post('/log', verifyToken, (req, res) => {
   res.json({ ok: true });
 });
 
+// Logout / revoke session
+app.post('/api/logout', verifyToken, (req, res) => {
+  try {
+    const token = req.headers['x-session-token'];
+    const sessions = readJson(SESSIONS_FILE);
+    if (sessions[token]) {
+      delete sessions[token];
+      writeJson(SESSIONS_FILE, sessions);
+    }
+    res.json({ ok: true });
+  } catch (e) { res.status(500).json({ ok: false, error: 'logout_failed' }); }
+});
+
 // Simple admin guard middleware (for demo: user 'admin' is admin)
 function requireAdmin(req, res, next) {
-  if (req.sessionUser !== 'admin') return res.status(403).json({ ok: false, error: 'forbidden' });
-  next();
+  try {
+    const users = readJson(USERS_FILE);
+    const u = users[req.sessionUser] || {};
+    const roles = Array.isArray(u.roles) ? u.roles : [];
+    if (!roles.includes('admin')) return res.status(403).json({ ok: false, error: 'forbidden' });
+    next();
+  } catch (e) { return res.status(500).json({ ok: false, error: 'server_error' }); }
 }
 
 // Admin: read raw logs
@@ -122,6 +154,14 @@ app.get('/admin/users', verifyToken, requireAdmin, (req, res) => {
   try {
     const users = readJson(USERS_FILE);
     res.json(users);
+  } catch (e) { res.status(500).json({ ok: false, error: 'read_error' }); }
+});
+
+// Admin: list active sessions
+app.get('/admin/sessions', verifyToken, requireAdmin, (req, res) => {
+  try {
+    const sessions = readJson(SESSIONS_FILE);
+    res.json(sessions);
   } catch (e) { res.status(500).json({ ok: false, error: 'read_error' }); }
 });
 

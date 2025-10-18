@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="420" viewBox="0 0 900 420">
+  <style>
+    .title { font: bold 16px sans-serif; fill: #111827 }
+    .box { fill: #ffffff; stroke: #111827; stroke-width: 1; rx: 8 }
+    .label { font: 14px sans-serif; fill: #111827 }
+    .muted { font: 12px sans-serif; fill: #6b7280 }
+  </style>
+  <rect x="8" y="8" width="884" height="64" rx="6" fill="#eef2ff" stroke="#c7d2fe"/>
+  <text x="20" y="46" class="title">RealityAuthenticator — System Overview</text>
+
+  <!-- Client -->
+  <rect class="box" x="24" y="96" width="240" height="120"/>
+  <text x="44" y="130" class="label">Browser UI</text>
+  <text x="44" y="150" class="muted">index.html (image/social/doc tabs)</text>
+
+  <!-- API Server -->
+  <rect class="box" x="330" y="56" width="260" height="200"/>
+  <text x="350" y="90" class="label">Node / Express API</text>
+  <text x="350" y="110" class="muted">/api/register, /api/login, /log, /admin/*</text>
+
+  <!-- DB & Logs -->
+  <rect class="box" x="650" y="96" width="220" height="120"/>
+  <text x="670" y="130" class="label">Local Persistence</text>
+  <text x="670" y="150" class="muted">db/users.json, db/sessions.json</text>
+  <text x="670" y="168" class="muted">logs/validation.log</text>
+
+  <!-- arrows -->
+  <defs>
+    <marker id="arrow" markerWidth="10" markerHeight="10" refX="6" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#111827" />
+    </marker>
+  </defs>
+  <line x1="264" y1="150" x2="330" y2="150" stroke="#111827" stroke-width="2" marker-end="url(#arrow)"/>
+  <line x1="590" y1="150" x2="650" y2="150" stroke="#111827" stroke-width="2" marker-end="url(#arrow)"/>
+
+  <text x="300" y="140" class="muted">HTTPS / API calls</text>
+  <text x="510" y="140" class="muted">Persistent sessions & logs</text>
+
+</svg>

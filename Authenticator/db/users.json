@@ -7,6 +7,14 @@
   "admin": {
     "salt": "c6f2fc7021e9b42b681418d806a7c5aa",
     "hash": "e0105b407f1274f4765d4b2720c7250cba9e4d3fd7138e6ade590ba0008b2b1e4e8ecca5ae2dde3032b49220443ee460ae0e0ddae44cb9f4c401b158b8b0eaf3",
+    "roles": [
+      "admin"
+    ],
     "createdAt": "2025-10-17T03:32:59.591Z"
+  },
+  "test-runner": {
+    "salt": "a92b87b6ea23d1c50f1e9f73c2c97805",
+    "hash": "a6657744552be9da26c093a6a45c1fa2508a8568afcbde5167b988a2a80e23b765134418259797c432aa6f2a2d54438bd0ed850d3bed0a3a8b302fb6ed7eca7a",
+    "createdAt": "2025-10-18T14:03:34.395Z"
   }
 }

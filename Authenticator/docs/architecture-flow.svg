@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg" width="900" height="500" viewBox="0 0 900 500">
+  <style>
+    .title { font: bold 16px sans-serif; fill: #0f172a }
+    .box { fill: #fff; stroke: #0f172a; stroke-width: 1; rx: 8 }
+    .label { font: 13px sans-serif; fill: #0f172a }
+    .small { font: 12px sans-serif; fill: #475569 }
+  </style>
+  <text x="20" y="30" class="title">Request Flow & Logging</text>
+
+  <rect class="box" x="24" y="56" width="200" height="80"/>
+  <text x="44" y="96" class="label">User Browser</text>
+  <text x="44" y="114" class="small">(index.html / login.html)</text>
+
+  <rect class="box" x="260" y="20" width="300" height="140"/>
+  <text x="280" y="56" class="label">API Server (Node/Express)</text>
+  <text x="280" y="76" class="small">Auth, sessions, /log, /admin</text>
+
+  <rect class="box" x="600" y="56" width="260" height="80"/>
+  <text x="620" y="96" class="label">Local Storage</text>
+  <text x="620" y="114" class="small">db/*.json, logs/validation.log</text>
+
+  <rect class="box" x="260" y="200" width="300" height="120"/>
+  <text x="280" y="236" class="label">AI / Grounding Services (external)</text>
+  <text x="280" y="256" class="small">(Simulated in UI via ApiHandler)</text>
+
+  <defs>
+    <marker id="arrow2" markerWidth="10" markerHeight="10" refX="6" refY="5" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#0f172a" />
+    </marker>
+  </defs>
+
+  <line x1="224" y1="96" x2="260" y2="96" stroke="#0f172a" stroke-width="2" marker-end="url(#arrow2)"/>
+  <line x1="560" y1="96" x2="600" y2="96" stroke="#0f172a" stroke-width="2" marker-end="url(#arrow2)"/>
+  <line x1="410" y1="140" x2="410" y2="200" stroke="#0f172a" stroke-width="2" marker-end="url(#arrow2)"/>
+  <line x1="410" y1="320" x2="410" y2="380" stroke="#0f172a" stroke-width="2" marker-end="url(#arrow2)"/>
+
+  <text x="350" y="170" class="small">/api/login -> token</text>
+  <text x="350" y="330" class="small">AI call (analyse content)</text>
+
+</svg>

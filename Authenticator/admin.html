@@ -1,0 +1,39 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Admin - RealityAuthenticator</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <style>body{font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,"Helvetica Neue",Arial}</style>
+</head>
+<body class="p-6 bg-gray-50">
+  <div class="max-w-5xl mx-auto">
+    <h1 class="text-2xl font-bold mb-4">Admin Console</h1>
+    <div class="mb-4">
+      <label class="block text-sm">Session Token (x-session-token)</label>
+      <input id="tokenInput" class="w-full p-2 border rounded mt-1" placeholder="paste admin token here" />
+      <div class="mt-2 flex gap-2">
+        <button id="loadBtn" class="px-3 py-2 bg-indigo-600 text-white rounded">Load</button>
+        <button id="refreshBtn" class="px-3 py-2 bg-gray-200 rounded">Refresh</button>
+      </div>
+    </div>
+
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-4">
+      <div class="bg-white p-4 rounded shadow">
+        <h3 class="font-bold">Users</h3>
+        <pre id="usersBox" class="text-xs mt-2 overflow-auto max-h-64"></pre>
+      </div>
+      <div class="bg-white p-4 rounded shadow">
+        <h3 class="font-bold">Sessions</h3>
+        <pre id="sessionsBox" class="text-xs mt-2 overflow-auto max-h-64"></pre>
+      </div>
+      <div class="bg-white p-4 rounded shadow">
+        <h3 class="font-bold">Logs</h3>
+        <pre id="logsBox" class="text-xs mt-2 overflow-auto max-h-64"></pre>
+      </div>
+    </div>
+  </div>
+  <script src="/admin.js"></script>
+</body>
+</html>
