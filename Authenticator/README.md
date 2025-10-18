@@ -2,6 +2,10 @@
 
 This workspace is a self-contained demo of a small forensic verification UI and a tiny Node/Express backend that supports:
 
+
+<img width="1285" height="662" alt="image" src="https://github.com/user-attachments/assets/be08550c-6b40-453b-8c16-08210df1e0f7" />
+
+
 Quick start (requires Node.js):
 
 1. Install dependencies from the project root:
